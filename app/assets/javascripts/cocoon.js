@@ -14,6 +14,13 @@
     return '_' + id + '_$1';
   }
 
+  var create_cocoon_event = function(type) {
+        return jQuery.Event('cocoon:' + type);
+      },
+      event_aborted = function(event) {
+        return event.hasOwnProperty('abort') && event.abort;
+      }
+
   $(document).on('click', '.add_fields', function(e) {
     e.preventDefault();
     var $this                 = $(this),
@@ -63,9 +70,13 @@
     }
 
     for (var i in new_contents) {
-      var contentNode = $(new_contents[i]);
+      var contentNode = $(new_contents[i]),
+          before_insert_event = create_cocoon_event('before-insert');
 
-      insertionNode.trigger('cocoon:before-insert', [contentNode]);
+      insertionNode.trigger(before_insert_event, [contentNode]);
+      if (event_aborted(before_insert_event)) {
+        continue;
+      }
 
       // allow any of the jquery dom manipulation methods (after, before, append, prepend, etc)
       // to be called on the node.  allows the insertion node to be the parent of the inserted
